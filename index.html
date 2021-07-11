@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cubes</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+
+  <body>
+    <h1>¡HI! :D</h1>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
+    <script>
+      // Escena donde todos los objetos están
+      let scene = new THREE.Scene();
+      let camera = new THREE.PerspectiveCamera(
+        75, // field of view
+        window.innerWidth / window.innerHeight, // aspect ratio
+        0.1, // near
+        1000 // far
+      );
+      camera.position.z = 5;
+      camera.position.x = 0;
+      camera.position.y = 0;
+      // Moto de rendereado
+      let renderer = new THREE.WebGLRenderer();
+      // Color de fondo
+      renderer.setClearColor("#e5e5e5");
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      // Añadir el rendereado al body
+      document.body.appendChild(renderer.domElement);
+      // Hacer el render responsive
+      window.addEventListener("resize", function () {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        // Actualizar la camara
+        camera.updateProjectionMatrix();
+      });
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
+
+      // Traer una esfera
+      var geometry = new THREE.BoxGeometry(1, 1, 1);
+      var material = new THREE.MeshLambertMaterial({ color: 0x8d8d8d });
+      //var mesh = new THREE.Mesh(geometry, material);
+
+      // Añadir la esfera a la escena
+      //scene.add(mesh);
+      let meshX = -10;
+      for (let i = 0; i < 15; i++) {
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.position.x = (Math.random() - 0.5) * 10;
+        mesh.position.y = (Math.random() - 0.5) * 10;
+        mesh.position.z = (Math.random() - 0.5) * 10;
+        scene.add(mesh);
+        meshX += 1;
+      }
+
+      // Crear luz
+      var light = new THREE.PointLight(
+        0xffffff, // Color
+        1, // Intencidad
+        500 // Distancia
+      );
+      light.position.set(0, 0, 0);
+      scene.add(light);
+
+      // Crear luz
+      var light = new THREE.PointLight(
+        0xffffff, // Color
+        2, // Intencidad
+        800 // Distancia
+      );
+      light.position.set(0, 0, 25);
+      scene.add(light);
+
+      // Empezar a renderear (60 fps)
+      var render = function () {
+        requestAnimationFrame(render);
+        /*
+                Rotacion animada
+                mesh.rotation.x += 0.01;
+                mesh.rotation.y += 0.01;
+            */
+        renderer.render(scene, camera);
+      };
+
+      function onMouseMove(event) {
+        event.preventDefault();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        let intersects = raycaster.intersectObjects(scene.children, true);
+        for (let i = 0; i < intersects.length; i++) {
+          // hacer animaciones
+          this.tl = new TimelineMax();
+        //   this.tl.to(intersects[i].object.material.color, 0.5, { r: 0, g: 0.5, b: 0.5 },
+        //     "=-1.5");
+          this.tl.to(
+            intersects[i].object.scale, // Sobre que se aplica
+            1, // Cuanto dura la animacion
+            { x: 2, ease: Expo.easeOut } // Que hace la animación
+          );
+          this.tl.to(intersects[i].object.scale, 0.5, {
+            x: 0.5,
+            ease: Expo.easeOut,
+          });
+          this.tl.to(intersects[i].object.position, 0.5, {
+            x: (Math.random() < 0.5 ? -1 : 1) * Math.random() * 3 + 1,
+            ease: Expo.easeOut,
+          });
+          // El ultimo parametro es para adelantar la animacion 1.5 seg antes.
+          this.tl.to(
+            intersects[i].object.rotation,
+            0.5,
+            { y: Math.PI * 0.5, ease: Expo.easeOut },
+            "=-1.5"
+          );
+        }
+      }
+      window.addEventListener("click", onMouseMove);
+      render();
+    </script>
+  </body>
+</html>
